@@ -41,7 +41,7 @@ void dictionary_put(dictionary *d, uint64_t key, void *value) {
     (*entry)->value = value;
     d->size++;
   } else {
-    dictionary_entry *next = *entry, *prev;
+    dictionary_entry *next = *entry, *prev = next;
     while (next && next->key != key) {
       prev = next;
       next = next->next;
@@ -72,6 +72,10 @@ bool dictionary_get(dictionary *d, uint64_t key, void **value) {
     return true;
   }
   return false;
+}
+
+bool dictionary_empty(dictionary *d) {
+  return !d->size;
 }
 
 void dictionary_print(dictionary *d) {

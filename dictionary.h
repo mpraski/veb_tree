@@ -5,7 +5,7 @@
 #ifndef VEB_TREE_DICTIONARY_H
 #define VEB_TREE_DICTIONARY_H
 
-#define DICT_SIZE 4096U
+#define DICT_SIZE (uint64_t)4096U
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,11 +32,13 @@ dictionary *dictionary_new();
 
 void dictionary_free(dictionary *d);
 
-void dictionary_destruct(dictionary *d, void (*destructor)(void*));
+void dictionary_destruct(dictionary *d, void (*destructor)(void *));
 
 void dictionary_put(dictionary *d, uint64_t key, void *value);
 
 bool dictionary_get(dictionary *d, uint64_t key, void **value);
+
+bool dictionary_empty(dictionary *d);
 
 void dictionary_print(dictionary *d);
 
