@@ -4,19 +4,26 @@
 
 #include "dictionary.h"
 
-dictionary *new_dictionary() {
+static void default_destructor(__attribute__((unused)) void *p) {}
+
+dictionary *dictionary_new() {
   dictionary *d = (dictionary *) malloc(sizeof(dictionary));
   d->size = 0;
   memset(&d->contents, 0, DICT_SIZE * sizeof(dictionary_entry *));
   return d;
 }
 
-void free_dictionary(dictionary *d) {
+void dictionary_free(dictionary *d) {
+  dictionary_destruct(d, default_destructor);
+}
+
+void dictionary_destruct(dictionary *d, void (*destructor)(void *)) {
   dictionary_entry *prev, *next;
   for (size_t i = 0; i < DICT_SIZE; ++i) {
     if ((prev = d->contents[i])) {
       do {
         next = prev->next;
+        destructor(prev->value);
         free(prev);
         prev = next;
       } while (prev);

@@ -16,19 +16,19 @@ struct veb_tree {
 
 typedef struct veb_tree veb_tree;
 
-veb_tree *new_veb_tree();
+veb_tree *veb_tree_new();
 
-void veb_free(veb_tree *t);
+void veb_tree_free(veb_tree *t);
 
-void veb_insert(veb_tree *t, uint64_t value);
+void veb_tree_insert(veb_tree *t, uint64_t value);
 
-void _veb_insert(veb_tree *t, uint64_t value, uint8_t bits);
+void _veb_tree_insert(veb_tree *t, uint64_t value, int bits);
 
-uint64_t veb_predecessor(veb_tree *t, uint64_t value);
+uint64_t veb_tree_predecessor(veb_tree *t, uint64_t value);
 
-uint64_t veb_successor(veb_tree *t, uint64_t value);
+uint64_t veb_tree_successor(veb_tree *t, uint64_t value);
 
-uint64_t _veb_predecessor(veb_tree *t, uint64_t value, uint8_t bits);
+uint64_t _veb_tree_predecessor(veb_tree *t, uint64_t value, int bits);
 
 static inline void lo_hi(uint64_t val, uint8_t bits, uint64_t *lo, uint64_t *hi) {
   *lo = ((((1u << bits) - 1u) << bits) & val) >> bits;

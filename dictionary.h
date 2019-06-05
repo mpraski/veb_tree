@@ -28,9 +28,11 @@ struct dictionary {
 
 typedef struct dictionary dictionary;
 
-dictionary *new_dictionary();
+dictionary *dictionary_new();
 
-void free_dictionary(dictionary *d);
+void dictionary_free(dictionary *d);
+
+void dictionary_destruct(dictionary *d, void (*destructor)(void*));
 
 void dictionary_put(dictionary *d, uint64_t key, void *value);
 
