@@ -30,8 +30,12 @@ void veb_tree_insert(veb_tree *t, uint64_t value) {
 }
 
 void _veb_tree_insert(veb_tree *t, uint64_t value, unsigned bits) {
+  if (!t) {
+    t = veb_tree_new();
+  }
+
   if (t->empty) {
-    t->min = value;
+    t->min = t->max = value;
     t->empty = false;
     return;
   }
@@ -44,50 +48,58 @@ void _veb_tree_insert(veb_tree *t, uint64_t value, unsigned bits) {
     t->max = value;
   }
 
-  veb_tree *child;
-  uint64_t lo, hi;
-  unsigned h = bits / 2;
-  lo_hi(value, h, &lo, &hi);
+  if (bits > 2) {
+    veb_tree *child;
+    uint64_t lo, hi;
+    unsigned h = bits >> 2u;
+    lo_hi(value, h, &lo, &hi);
 
-  if (!dictionary_get(t->clusters, lo, (void **) &child)) {
-    child = veb_tree_new();
-    dictionary_put(t->clusters, lo, child);
-    _veb_tree_insert(t->summary, lo, h);
+    if (!dictionary_get(t->clusters, lo, (void **) &child)) {
+      child = veb_tree_new();
+      dictionary_put(t->clusters, lo, child);
+    }
+
+    if (child->empty) {
+      _veb_tree_insert(t->summary, lo, h);
+    }
+
+    _veb_tree_insert(child, hi, h);
   }
-
-  _veb_tree_insert(child, hi, h);
 }
 
-uint64_t veb_tree_predecessor(veb_tree *t, uint64_t value) {
-  return _veb_tree_predecessor(t, value, sizeof(value) * CHAR_BIT);
+bool veb_tree_predecessor(veb_tree *t, uint64_t value, uint64_t *result) {
+  return _veb_tree_predecessor(t, value, sizeof(value) * CHAR_BIT, result);
 }
 
-uint64_t _veb_tree_predecessor(veb_tree *t, uint64_t value, unsigned bits) {
-  printf("Looking for pred of %lu\n", value);
-  if (value > t->max) {
-    return t->max;
+bool _veb_tree_predecessor(veb_tree *t, uint64_t value, unsigned bits, uint64_t *result) {
+  if (value <= t->min) {
+    return false;
+  } else if (value > t->max) {
+    *result = t->max;
+    return true;
   }
 
   veb_tree *child;
   uint64_t lo, hi;
-  unsigned h = bits / 2;
+  unsigned h = bits >> 2u;
   lo_hi(value, h, &lo, &hi);
 
-  dictionary_print(t->clusters);
-  if (!dictionary_get(t->clusters, lo, (void **) &child)) {
-    fprintf(stderr, "Key %lu not found in dictionary\n", lo);
-    exit(-1);
-  } else if (child->min < value) {
-    return _veb_tree_predecessor(child, hi, h);
+  dictionary_get(t->clusters, lo, (void **) &child);
+
+  if (value > child->max) {
+    *result = child->max;
+    return true;
+  } else if (hi <= child->min) {
+    if (_veb_tree_predecessor(t->summary, lo, h, result)) {
+      dictionary_get(t->clusters, *result, (void **) &child);
+      *result = child->max;
+    } else {
+      *result = t->min;
+    }
+    return true;
   }
 
-  uint64_t cp = _veb_tree_predecessor(t->summary, lo, h);
-  if (!dictionary_get(t->clusters, cp, (void **) &child)) {
-    fprintf(stderr, "Key %lu not found in dictionary\n", cp);
-    exit(-1);
-  }
-
-  return child->max;
+  return _veb_tree_predecessor(child, hi, h, result);
 }
 
 void veb_tree_print(veb_tree *t, unsigned indent) {

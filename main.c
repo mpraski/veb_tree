@@ -4,12 +4,13 @@
 
 int main() {
   veb_tree *veb = veb_tree_new();
-  veb_tree_insert(veb, 10);
-  veb_tree_insert(veb, 11);
-  veb_tree_insert(veb, 12);
-  veb_tree_insert(veb, 13);
-  veb_tree_print(veb, 0);
-  printf("Predecessor to 11: %lu\n", veb_tree_predecessor(veb, 11));
+  for (uint64_t i = 0; i < (1u << 12u); ++i) {
+    printf("i: %lu\n", i);
+    veb_tree_insert(veb, i);
+  }
+  int64_t val;
+  veb_tree_predecessor(veb, 100, &val);
+  printf("Predecessor to 100: %lu\n", val);
   veb_tree_free(veb);
   return 0;
 }

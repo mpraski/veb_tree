@@ -7,11 +7,11 @@
 #include "dictionary.h"
 
 struct veb_tree {
-    uint64_t min;
-    uint64_t max;
-    struct veb_tree *summary;
-    dictionary *clusters;
-    bool empty;
+  uint64_t min;
+  uint64_t max;
+  struct veb_tree *summary;
+  dictionary *clusters;
+  bool empty;
 };
 
 typedef struct veb_tree veb_tree;
@@ -24,9 +24,9 @@ void veb_tree_insert(veb_tree *t, uint64_t value);
 
 void _veb_tree_insert(veb_tree *t, uint64_t value, unsigned bits);
 
-uint64_t veb_tree_predecessor(veb_tree *t, uint64_t value);
+bool veb_tree_predecessor(veb_tree *t, uint64_t value, uint64_t *result);
 
-uint64_t _veb_tree_predecessor(veb_tree *t, uint64_t value, unsigned bits);
+bool _veb_tree_predecessor(veb_tree *t, uint64_t value, unsigned bits, uint64_t *result);
 
 uint64_t veb_tree_successor(veb_tree *t, uint64_t value);
 
