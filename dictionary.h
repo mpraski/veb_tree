@@ -5,8 +5,6 @@
 #ifndef VEB_TREE_DICTIONARY_H
 #define VEB_TREE_DICTIONARY_H
 
-#define DICT_SIZE (uint64_t)4096U
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -22,13 +20,15 @@ struct dictionary_entry {
 typedef struct dictionary_entry dictionary_entry;
 
 struct dictionary {
-    size_t size;
-    struct dictionary_entry *contents[DICT_SIZE];
+    unsigned capacity;
+    unsigned size;
+
+    struct dictionary_entry **contents;
 };
 
 typedef struct dictionary dictionary;
 
-dictionary *dictionary_new();
+dictionary *dictionary_new(unsigned capacity);
 
 void dictionary_free(dictionary *d);
 
@@ -36,7 +36,7 @@ void dictionary_destruct(dictionary *d, void (*destructor)(void *));
 
 void dictionary_put(dictionary *d, uint64_t key, void *value);
 
-bool dictionary_get(dictionary *d, uint64_t key, void **value);
+void *dictionary_get(dictionary *d, uint64_t key);
 
 bool dictionary_empty(dictionary *d);
 
