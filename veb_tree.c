@@ -23,7 +23,7 @@ void veb_tree_free(veb_tree *t) {
 }
 
 void veb_tree_insert(veb_tree *t, uint64_t value) {
-  _veb_tree_insert(&t, value, 32);
+  _veb_tree_insert(&t, value, UNIVERSE_BITS / 2);
 }
 
 void _veb_tree_insert(veb_tree **tree, uint64_t value, unsigned bits) {
@@ -42,19 +42,16 @@ void _veb_tree_insert(veb_tree **tree, uint64_t value, unsigned bits) {
     uint64_t temp = t->min;
     t->min = value;
     value = temp;
-  }
-
-  if (value > t->max) {
+  } else if (value > t->max) {
     t->max = value;
   }
 
-  if (bits > 0) {
+  if (bits) {
     veb_tree *child;
     uint64_t lo, hi;
     lo_hi(value, bits, &lo, &hi);
-    child = dictionary_get(t->clusters, hi);
 
-    if (!child) {
+    if (!(child = dictionary_get(t->clusters, hi))) {
       child = veb_tree_new(bits);
       dictionary_put(t->clusters, hi, child);
       _veb_tree_insert(&t->summary, hi, bits / 2);
@@ -65,7 +62,7 @@ void _veb_tree_insert(veb_tree **tree, uint64_t value, unsigned bits) {
 }
 
 uint64_t veb_tree_predecessor(veb_tree *t, uint64_t value) {
-  return _veb_tree_predecessor(t, value, 32);
+  return _veb_tree_predecessor(t, value, UNIVERSE_BITS / 2);
 }
 
 uint64_t _veb_tree_predecessor(veb_tree *t, uint64_t value, unsigned bits) {
@@ -82,36 +79,52 @@ uint64_t _veb_tree_predecessor(veb_tree *t, uint64_t value, unsigned bits) {
   }
 
   veb_tree *child;
-  uint64_t lo, hi, min, i, j;
+  uint64_t lo, hi, lo2, hi2;
   lo_hi(value, bits, &lo, &hi);
   child = dictionary_get(t->clusters, hi);
-  i = hi;
+  hi2 = hi;
 
-  if ((min = veb_tree_min(child)) != NONE && lo > min) {
-    if ((j = _veb_tree_predecessor(child, lo, bits / 2)) == NONE) {
+  if (lo > veb_tree_min(child)) {
+    if ((lo2 = _veb_tree_predecessor(child, lo, bits / 2)) == NONE) {
       return NONE;
     }
   } else {
-    if ((i = _veb_tree_predecessor(t->summary, hi, bits / 2)) == NONE) {
+    if ((hi2 = _veb_tree_predecessor(t->summary, hi, bits / 2)) == NONE) {
       if (t->min < value) {
         return t->min;
       }
       return NONE;
     }
-    child = dictionary_get(t->clusters, i);
-    if ((j = veb_tree_max(child)) == NONE) {
+    child = dictionary_get(t->clusters, hi2);
+    if ((lo2 = veb_tree_max(child)) == NONE) {
       return NONE;
     }
   }
 
-  return whole(j, i, bits);
+  return whole(lo2, hi2, bits);
+}
+
+uint64_t veb_tree_successor(veb_tree *t, uint64_t value) {
+  return _veb_tree_successor(t, value, 32);
+}
+
+uint64_t _veb_tree_successor(veb_tree *t, uint64_t value, unsigned bits) {
+  if (value < t->min) {
+    return t->min;
+  }
+
+  if (!t->summary) {
+    if (value < t->max) {
+      return t->max;
+    }
+  }
 }
 
 void veb_tree_sort_descending(uint64_t *values, unsigned size) {
-  unsigned i;
-  veb_tree *veb = veb_tree_new(64);
-  for (i = 0; i < size; ++i) {
-    veb_tree_insert(veb, values[i]);
+  size_t i = 0;
+  veb_tree *veb = veb_tree_new(UNIVERSE_BITS);
+  while (i < size) {
+    veb_tree_insert(veb, values[i++]);
   }
 
   i = 1;
@@ -141,7 +154,7 @@ void _veb_tree_print(dictionary *d, unsigned indent) {
   }
 
   dictionary_entry *next;
-  for (unsigned i = 0; i < d->capacity; ++i) {
+  for (size_t i = 0; i < d->capacity; ++i) {
     if ((next = d->contents[i])) {
       do {
         printf("%*sKey (%lu):\n", indent, "", next->key);

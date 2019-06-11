@@ -20,15 +20,15 @@ struct dictionary_entry {
 typedef struct dictionary_entry dictionary_entry;
 
 struct dictionary {
-    unsigned capacity;
-    unsigned size;
+    size_t capacity;
+    size_t size;
 
     struct dictionary_entry **contents;
 };
 
 typedef struct dictionary dictionary;
 
-dictionary *dictionary_new(unsigned capacity);
+dictionary *dictionary_new(size_t capacity);
 
 void dictionary_free(dictionary *d);
 

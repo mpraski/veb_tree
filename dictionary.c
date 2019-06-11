@@ -6,7 +6,7 @@
 
 static inline void default_destructor(__attribute__((unused)) void *p) {}
 
-dictionary *dictionary_new(unsigned capacity) {
+dictionary *dictionary_new(size_t capacity) {
   dictionary *d = (dictionary *) malloc(sizeof(dictionary));
   d->capacity = capacity;
   d->size = 0;
@@ -20,7 +20,7 @@ void dictionary_free(dictionary *d) {
 
 void dictionary_destruct(dictionary *d, void (*destructor)(void *)) {
   dictionary_entry *prev, *next;
-  for (unsigned i = 0; i < d->capacity; ++i) {
+  for (size_t i = 0; i < d->capacity; ++i) {
     if ((prev = d->contents[i])) {
       do {
         next = prev->next;
@@ -80,9 +80,9 @@ bool dictionary_empty(dictionary *d) {
 
 void dictionary_print(dictionary *d) {
   dictionary_entry *next;
-  for (unsigned i = 0; i < d->capacity; ++i) {
+  for (size_t i = 0; i < d->capacity; ++i) {
     if ((next = d->contents[i])) {
-      printf("Cell %u:", i);
+      printf("Cell %zu:", i);
       do {
         printf(" (%lu, %p)", next->key, next->value);
         next = next->next;

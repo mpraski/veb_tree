@@ -7,6 +7,7 @@
 #include "dictionary.h"
 
 #define NONE (uint64_t)(-1)
+#define UNIVERSE_BITS (sizeof(uint64_t) * CHAR_BIT)
 
 struct veb_tree {
     uint64_t min;
@@ -32,6 +33,8 @@ uint64_t veb_tree_predecessor(veb_tree *t, uint64_t value);
 uint64_t _veb_tree_predecessor(veb_tree *t, uint64_t value, unsigned bits);
 
 uint64_t veb_tree_successor(veb_tree *t, uint64_t value);
+
+uint64_t _veb_tree_successor(veb_tree *t, uint64_t value, unsigned bits);
 
 void veb_tree_sort_descending(uint64_t *values, unsigned size);
 
@@ -69,7 +72,7 @@ static inline uint64_t whole(
   return (hi << bits) + lo;
 }
 
-static inline unsigned veb_dict_capacity(unsigned bits) {
+static inline size_t veb_dict_capacity(unsigned bits) {
   switch (bits) {
     case 64:
       return 1u << 24u;
